@@ -1,0 +1,63 @@
+============================ settings.py =======================
+
+Add this line in install app
+
+rest_framework',
+'rest_framework.authtoken',
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',  # <-- And here
+    ],
+}
+
+================================= views.py============================
+from django.shortcuts import render
+from django.contrib.auth import authenticate
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.decorators import api_view, permission_classes
+# from rest_framework.auth
+from rest_framework.authtoken.models import Token
+from rest_framework.generics import CreateAPIView
+from rest_framework import viewsets, status, permissions
+from rest_framework.generics import CreateAPIView
+from rest_framework.views import APIView
+from rest_framework import generics
+
+
+
+class Login(generics.GenericAPIView):
+    def post(self , request):
+        data = request.data
+        username = data['username']
+        password = data['password']
+        if username is None or password is None:
+            return Response({'error':"Username or password is wrong"})
+        user = authenticate(username = username , password = password)
+        if not user:
+            return Response({"error":"User not found"})
+        token, created = Token.objects.get_or_create(user = user)   ########################### Main line of code
+        print(token,'>>>>>>>>>')
+        return Response({"token":token.key})
+
+
+class Hello(generics.GenericAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    def get(self , request):
+        data    = request.data
+        context = {
+            "message":"This is sachin pawar"
+        }
+        return Response(context)
+
+======================================================================
+postman madhe header madhe
+
+Authorization           token 3e7b08734629981c8f3a4d3d317e156f40d8f3c0
